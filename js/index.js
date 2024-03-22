@@ -1,39 +1,47 @@
 const todo = document.getElementById('input');
 const add = document.getElementById('submit');
 const list = document.querySelector('.todo-list');
-const del = document.querySelector('.delete-btn');
+
+let todos = JSON.parse(localStorage.getItem("todos")) || [];
+console.log(todos);
+
+function todoList() {
+    list.innerHTML = ``;
+    todos.forEach((todo, index) => {
+        list.innerHTML += `
+            <li class="todo-item">
+                <span>${todo.task}</span>
+                <button class="delete-btn" data-index="${index}">x</button>
+            </li>
+        `;
+    });
+}
 
 add.addEventListener('click', () => {
     let data = todo.value;
     try {
-        if(!data){
+        if (!data) {
             alert("Please type something in input field first.");
         } else {
-            localStorage.setItem(data, data);
-            let getData = localStorage.getItem(data);
-            list.innerHTML += `
-                <li class="todo-item">
-                    <span>${getData}</span>
-                    <button class="delete-btn">x</button>
-                </li>
-            `
+            todos.push({ task: data, completed: false });
+            localStorage.setItem('todos', JSON.stringify(todos));
+            todoList();
         }
     } catch (error) {
         console.log(error);
     }
 });
 
-
-del.addEventListener('click', (event) => {
-    let listItem = event.target.parentNode;
-    deleteItem(listItem);
+// Event delegation to handle delete button clicks
+list.addEventListener('click', (event) => {
+    if (event.target.classList.contains('delete-btn')) {
+        // If the clicked element is a delete button
+        let index = event.target.dataset.index;
+        todos.splice(index, 1); // Remove the todo from the array
+        localStorage.setItem('todos', JSON.stringify(todos)); // Update local storage
+        todoList(); // Update the todo list on the page
+    }
 });
 
-function deleteItem(listItem) {
-    let data = listItem.querySelector('span').innerHTML;
-    if(data != localStorage.getItem(data)) {
-        console.log("Data mismatch. Item can't be deleted.");
-    } else {
-        console.log("Ok Darling");
-    }
-}
+// Initial rendering of todos when the page loads
+todoList();
